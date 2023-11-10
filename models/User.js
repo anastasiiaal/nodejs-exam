@@ -14,14 +14,8 @@ const User = sequelize.define('User', {
     },
     password: {
         type: DataTypes.STRING,
-        allowNull: false,
-        set: function(value) {
-            this.setDataValue(value + "*")
-        }
-    },
-    // address: {
-    //     type: DataTypes.STRING,
-    // }
+        allowNull: false
+    }
 }, {
     indexes: [
         {'unique': true, fields: ['email']},

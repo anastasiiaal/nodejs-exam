@@ -13,6 +13,7 @@ require('./models/index.js');
 // Importation des routeurs
 const indexRouter = require('./routes/index.js');
 const productRouter = require('./routes/product.js');
+const userRouter = require('./routes/user.js');
 
 const app = express();
 
@@ -23,5 +24,6 @@ app.use(cookieParser());
 
 app.use('/', indexRouter);
 app.use('/product', productRouter)
+app.use('/user', userRouter)
 
 module.exports = app;
