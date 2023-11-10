@@ -21,6 +21,16 @@ router.get('/all', async function (req, res) {
     const productsPerPage = 2;
     const offset = (page - 1) * productsPerPage;
 
+    // here we manage categories / tags
+    // if we provide key "cat", we can can only see products whose category's id is provided
+    const category = req.query.cat
+    let whereClause
+    if (category) {
+        whereClause= {
+            id: category
+        }
+    }
+
     const products = await Product.findAll({
         attributes: ['id', 'title', 'price'],
         where: {
@@ -31,10 +41,11 @@ router.get('/all', async function (req, res) {
         },
         include: [{
             model: Tag,
-            attributes: ['name'],
+            attributes: ['id', 'name'],
             through: {
                 attributes: []
-            }
+            },
+            where: whereClause
         }],
         offset: offset,
         limit: productsPerPage,
