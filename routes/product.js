@@ -120,4 +120,25 @@ router.post('/', async function (req, res) {
     }
 });
 
+// ___________________________________________________________________
+// route to delete a product
+router.delete('/:id', async function (req, res) {
+    const id = req.params.id
+    const product = await Product.findByPk(id)
+
+    if(product) {
+        try {
+            await product.destroy();
+            res.json({ message: "Product deleted successfully" })
+            res.status(204)
+        } catch (exception) {
+            res.status(500)
+            res.send("Error while deletion: " + exception)
+        }
+    } else {
+        res.status(404)
+        res.send("Product you want to delete was not found")
+    }
+})
+
 module.exports = router;
