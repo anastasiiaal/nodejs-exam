@@ -145,9 +145,9 @@ router.delete('/:id', async function (req, res) {
 // ___________________________________________________________________
 // route to modify a product
 router.patch('/:id', async function (req, res) {
-
+    // get the :id from what we try to reach in url
     const id = req.params.id
-    const { title, price, description, stock } = req.body
+    const { title, price, description, stock, tagIds } = req.body
 
     try {
         const product = await Product.findByPk(id)
@@ -166,7 +166,18 @@ router.patch('/:id', async function (req, res) {
                 }
             }
 
+            // we update product attributes to save the later
             product.set(body)
+
+            // we set new tags (if they are provided)
+            if (tagIds && tagIds.length > 0) {
+                const tags = await Tag.findAll({
+                    where: {
+                        id: tagIds
+                    }
+                });
+                await product.setTags(tags);
+            }
 
             try {
                 await product.save()
