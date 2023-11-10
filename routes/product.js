@@ -24,7 +24,7 @@ router.get('/all', async function (req, res) {
     const products = await Product.findAll({
         attributes: ['id', 'title', 'price'],
         where: {
-            // where stock is greater than 0
+            // where stock is greater than 0; out of stock won't be seen
             stock: {
                 [Op.gt]: 0
             },
@@ -69,6 +69,7 @@ router.get('/:id', function (req, res) {
         }]
     }).then(product => {
         if (product) {
+            // if product out of stock - can't visit its page
             if (product.stock > 0) {
                 res.status(200);
                 res.json(product);
@@ -126,7 +127,7 @@ router.delete('/:id', async function (req, res) {
     const id = req.params.id
     const product = await Product.findByPk(id)
 
-    if(product) {
+    if (product) {
         try {
             await product.destroy();
             res.json({ message: "Product deleted successfully" })
@@ -140,5 +141,50 @@ router.delete('/:id', async function (req, res) {
         res.send("Product you want to delete was not found")
     }
 })
+
+// ___________________________________________________________________
+// route to modify a product
+router.patch('/:id', async function (req, res) {
+
+    const id = req.params.id
+    const { title, price, description, stock } = req.body
+
+    try {
+        const product = await Product.findByPk(id)
+
+        if (product) {
+            const body = {
+                title: title,
+                price: price,
+                description: description,
+                stock: stock,
+            }
+
+            for (let key in body) {
+                if (body[key] == undefined) {
+                    delete body[key]
+                }
+            }
+
+            product.set(body)
+
+            try {
+                await product.save()
+                res.status(200)
+                res.json({ message: "Task modified successfully" })
+            } catch (exception) {
+                res.status(500)
+                res.json("Error while modifying: " + exception)
+            }
+        } else {
+            res.status(404)
+            res.send("Product you want to modify was not found")
+        }
+    } catch (error) {
+        res.status(500)
+        res.json("Error while finding the product: " + error);
+    }
+})
+
 
 module.exports = router;
