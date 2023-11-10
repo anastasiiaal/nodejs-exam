@@ -21,7 +21,6 @@ Order.belongsToMany(Product, { through: OrderProduct })
 Product.belongsToMany(Order, { through: OrderProduct })
 
 
-
 // Synchronisation de la base
 // sequelize.sync({alter: true});
 
