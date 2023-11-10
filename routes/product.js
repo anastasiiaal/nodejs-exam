@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { Op } = require('sequelize')
 
 // Importation d'un modèle Sequelize dans une vue.
 // Par défaut, require ira chercher le fichier index.js
@@ -17,11 +18,17 @@ router.get('/all', async function (req, res) {
     // 2. we choose quantity per page
     // 3. we count the offset to use in query
     const page = req.query.page || 1;
-    const productsPerPage = 3;
+    const productsPerPage = 2;
     const offset = (page - 1) * productsPerPage;
 
     const products = await Product.findAll({
         attributes: ['id', 'title', 'price'],
+        where: {
+            // where stock is greater than 0
+            stock: {
+                [Op.gt]: 0 
+            },
+        },
         include: [{
             model: Tag,
             attributes: ['name'],
@@ -59,15 +66,24 @@ router.get('/:id', function (req, res) {
             through: {
                 attributes: []
             }
-        }],
+        }]
     }).then(product => {
-        if(product) {
-            res.json(product)
+        if (product) {
+            if (product.stock > 0) {
+                res.status(200);
+                res.json(product);
+            } else {
+                res.status(200);
+                res.json({ message: "Product out of stock" });
+            }
         } else {
-            res.status(404)
-            res.send("Product not found")
+            res.status(404);
+            res.json({ message: "Product not found" });
         }
-    })
+    }).catch(error => {
+        res.status(500)
+        res.json({ error: "Internal Server Error" });
+    });
 })
 
 module.exports = router;
