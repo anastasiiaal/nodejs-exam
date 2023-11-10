@@ -4,7 +4,7 @@ const { Op } = require('sequelize')
 
 // Importation d'un modèle Sequelize dans une vue.
 // Par défaut, require ira chercher le fichier index.js
-const { Product, Tag } = require('../models');
+const { Product, Tag, Categories } = require('../models');
 
 router.get('/', function (req, res) {
     res.send('Liste des produits');
@@ -26,7 +26,7 @@ router.get('/all', async function (req, res) {
         where: {
             // where stock is greater than 0
             stock: {
-                [Op.gt]: 0 
+                [Op.gt]: 0
             },
         },
         include: [{
@@ -44,15 +44,15 @@ router.get('/all', async function (req, res) {
         try {
             res.status(200)
             res.json(products)
-        } catch(exception) {
+        } catch (exception) {
             res.status(500)
             res.json("Error while fetching :" + exception)
         }
     } else {
         res.status(404)
-        res.json({ message: "Products not found"})
+        res.json({ message: "Products not found" })
     }
-    
+
 });
 
 // ___________________________________________________________________
@@ -85,5 +85,39 @@ router.get('/:id', function (req, res) {
         res.json({ error: "Internal Server Error" });
     });
 })
+
+// ___________________________________________________________________
+// route to create new product + add its tags
+router.post('/', async function (req, res) {
+    const { title, price, description, stock, tagIds } = req.body;
+
+    try {
+        const product = await Product.create({
+            title: title,
+            price: price,
+            description: description,
+            stock: stock,
+        })
+
+        // if tags ids are given NOT inside of an array, make it an array
+        const tagIdsArray = Array.isArray(tagIds) ? tagIds : [tagIds];
+        if (tagIdsArray.length > 0) {
+            const tags = await Tag.findAll({
+                where: {
+                    id: tagIdsArray
+                }
+            });
+
+            // here we create association with with provided tags
+            await product.addTags(tags);
+        }
+
+        res.status(201)
+        res.json({ message: "Product created successfully" })
+    } catch (exception) {
+        res.status(500)
+        res.send("Something went wrong: " + exception)
+    }
+});
 
 module.exports = router;

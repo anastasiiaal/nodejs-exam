@@ -20,14 +20,14 @@ Order.hasOne(User)
 Order.belongsToMany(Product, { through: OrderProduct })
 Product.belongsToMany(Order, { through: OrderProduct })
 
-
 // Synchronisation de la base
 // sequelize.sync({alter: true});
-
 
 module.exports = {
     Product: Product,
     User: User,
     Tag: Tag,
-    Role: Role
+    Role: Role,
+    Order: Order,
+    OrderProduct: OrderProduct
 }
