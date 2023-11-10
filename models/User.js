@@ -19,9 +19,9 @@ const User = sequelize.define('User', {
             this.setDataValue(value + "*")
         }
     },
-    address: {
-        type: DataTypes.STRING,
-    }
+    // address: {
+    //     type: DataTypes.STRING,
+    // }
 }, {
     indexes: [
         {'unique': true, fields: ['email']},
