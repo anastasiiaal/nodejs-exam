@@ -9,6 +9,7 @@ router.get('/', function (req, res) {
     res.send('Liste des produits');
 });
 
+// ___________________________________________________________________
 // route to get all products to show them in catalog (with pagination)
 router.get('/all', async function (req, res) {
     // here we manage pagination: 
@@ -38,7 +39,7 @@ router.get('/all', async function (req, res) {
             res.json(products)
         } catch(exception) {
             res.status(500)
-            res.json("Error while etching :" + exception)
+            res.json("Error while fetching :" + exception)
         }
     } else {
         res.status(404)
@@ -46,5 +47,27 @@ router.get('/all', async function (req, res) {
     }
     
 });
+
+// ___________________________________________________________________
+// route to get single product and all its information + its tag
+router.get('/:id', function (req, res) {
+    const id = req.params.id
+    Product.findByPk(id, {
+        include: [{
+            model: Tag,
+            attributes: ['name'],
+            through: {
+                attributes: []
+            }
+        }],
+    }).then(product => {
+        if(product) {
+            res.json(product)
+        } else {
+            res.status(404)
+            res.send("Product not found")
+        }
+    })
+})
 
 module.exports = router;
