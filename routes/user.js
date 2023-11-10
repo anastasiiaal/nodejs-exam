@@ -1,15 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt')
-const { User } = require('../models');
+const { User, Role } = require('../models');
 let jwt = require('jsonwebtoken')
 
-function generateToken (id) {
+function generateToken(id) {
     return jwt.sign(
-        {id: id}, 
+        { id: id },
         // we use a global variable here as a key
         process.env.JWT_SECRET,
-        // 3eme arg - pas obligatoire; passe tout ce qu'on veut de la liste existante en ojbet
+        // token might expire 
         // {
         //     expiresIn: 3600
         // }          
@@ -17,8 +17,8 @@ function generateToken (id) {
 }
 
 /* Route de test */
-router.get('/', function(req, res) {
-  res.send('Serveur fonctionnel');
+router.get('/', function (req, res) {
+    res.send('Serveur fonctionnel');
 });
 
 router.post('/signup', async (req, res) => {
@@ -37,11 +37,20 @@ router.post('/signup', async (req, res) => {
         // 12 iterations to hash
         const hashedPassword = await bcrypt.hash(password, 12);
 
-        // create a new user 
+        // by default, user should have role id 2 (== client), 1 == admin
+        // will probably conditionally fix it later...
+        const role = await Role.findByPk(2);
+
+        if (!role) {
+            return res.status(500).send("Role not found");
+        }
+
+        // we create a user-client 
         const newUser = await User.create({
             email: email,
             password: hashedPassword,
-            name: name
+            name: name,
+            RoleId: role.id // Assign the RoleId to the user
         });
 
         res.status(201)
@@ -52,14 +61,13 @@ router.post('/signup', async (req, res) => {
     }
 });
 
-
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     try {
         if (!email || !password) {
             res.status(400)
-            res.json({ message: "All fields are obligatory"});
+            res.json({ message: "All fields are obligatory" });
             return;
         }
 
@@ -93,48 +101,5 @@ router.post('/login', async (req, res) => {
         res.send("Error while connecting: " + error);
     }
 });
-
-
-
-
-
-/**
- * router.post('/login', (req, res) => {
-    const body = req.body
-
-    if (!body.email || !body.password) {
-        res.status(400)
-        res.send("Tous les deux champs sont obligatoires")
-        return
-    }
-
-    sqlQuery(`SELECT * FROM user WHERE email="${body.email}"`, result => {
-        if (result.length === 0) {
-            res.status(400)
-            res.send("MDP ou email invalide")
-            return
-        }
-
-        const user = result[0]
-
-        bcrypt.compare(body.password, user.password).then(isOk => {
-            if (!isOk) {
-                res.status(400)
-                res.send("MDP ou email invalide")
-            } else {
-            
-                delete user.password
-                
-                return res.json({
-                    "token": generateToken(user.id),   
-                    "user": user
-                })
-            }
-        })
-    })
-})
- */
-
-
 
 module.exports = router;
