@@ -14,6 +14,7 @@ require('./models/index.js');
 const indexRouter = require('./routes/index.js');
 const productRouter = require('./routes/product.js');
 const userRouter = require('./routes/user.js');
+const cartRouter = require('./routes/cart.js');
 
 const app = express();
 
@@ -25,5 +26,6 @@ app.use(cookieParser());
 app.use('/', indexRouter);
 app.use('/product', productRouter)
 app.use('/user', userRouter)
+app.use('/cart', cartRouter)
 
 module.exports = app;

@@ -9,14 +9,16 @@ const OrderProduct = sequelize.define('OrderProduct', {
         references: {
             model: Order,
             key: 'id'
-        }
+        },
+        allowNull: false
     },
     ProductId: {
         type: DataTypes.INTEGER,
         references: {
             model: Product,
             key: 'id'
-        }
+        },
+        allowNull: false
     },
     quantity: {
         type: DataTypes.INTEGER

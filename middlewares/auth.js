@@ -10,48 +10,41 @@ function authenticateUser(req, res, next){
 async function authentificationMiddleware (req, res, next) {
 
     const authHeader = req.headers.authorization;
-    console.log("authHeader === ");
-    console.log(authHeader);
-
+    // console.log("authHeader === " + JSON.stringify(authHeader, null, 2));
 
     if (authHeader && authHeader.startsWith('Bearer')) {
         const token = authHeader.split(' ')[1];
 
-        jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-            console.log(decoded);
-            if(err) {
-                res.status(401)
-                if(err.name === "TokenExpiredError") {
-                    res.send("Token expired")
+        jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
+
+            if (err) {
+                res.status(401);
+                if (err.name === "TokenExpiredError") {
+                    res.send("Token expired");
                 } else {
-                    res.send("Invalid token")
+                    res.send("Invalid token");
                 }
                 return;
             }
 
             try {
-                (async () => {
-                    await User.findByPk(decoded.id)
-                        .then(
-                            (user) => {
-                                if (!user) {
-                                    res.status(401)
-                                    res.send("Non authorized")
-                                    return;
-                                }
-                                delete user.dataValues.password
-                                // req.user = user.toJSON();
-                                req.user = user;
-                                next();
-                            }
-                        ).catch((error) => {
-                            res.status(404);
-                            res.send("Error while authentification: " + error);
-                        });
-                })();
-            } catch (err) {
+                const user = await User.findByPk(decoded.id)
+
+                if (!user) {
+                    res.status(401)
+                    res.send("Non authorized")
+                    return;
+                } else {
+                    res.status(404);
+                    res.send("Error while authentification");
+                }
+                delete user.dataValues.password
+                // req.user = user.toJSON();
+                req.user = user;
+                next();
+            } catch (error) {
                 res.status(401);
-                res.send("Access Denied");
+                res.send("Access Denied: " + error.message);
             }
         });
     } else {
@@ -59,6 +52,7 @@ async function authentificationMiddleware (req, res, next) {
         res.json({ message: "Access not authorized: token issue" });
     }
 }
+
 
 module.exports = {
     authenticateUser,

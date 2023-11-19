@@ -9,10 +9,10 @@ function generateToken(id) {
         { id: id },
         // we use a global variable here as a key
         process.env.JWT_SECRET,
-        // token might expire 
-        // {
-        //     expiresIn: 3600
-        // }          
+        // token expires in 30 days if user doesn't connect via borne
+        {
+            expiresIn: '30d'
+        }          
     )
 }
 
