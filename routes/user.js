@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt')
-const { User, Role } = require('../models');
+const { User, Role, Order } = require('../models');
 let jwt = require('jsonwebtoken')
 
 function generateToken(id) {
@@ -16,11 +16,7 @@ function generateToken(id) {
     )
 }
 
-/* Route de test */
-router.get('/', function (req, res) {
-    res.send('Serveur fonctionnel');
-});
-
+// sign up of a new user (with role of normal user == client)
 router.post('/signup', async (req, res) => {
     const { email, password, name } = req.body;
 
@@ -61,6 +57,7 @@ router.post('/signup', async (req, res) => {
     }
 });
 
+// log in of user
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
@@ -101,5 +98,42 @@ router.post('/login', async (req, res) => {
         res.send("Error while connecting: " + error);
     }
 });
+
+// router allowing to get information about a particular user: his id, name, email and total sum of his orders
+router.get('/:id', async (req, res) => {
+    let userId = req.params.id;
+
+    try {
+        const user = await User.findByPk(userId, {
+            // we also include Order to get the total sum of all orders user has so far
+            include: [
+                {
+                    model: Order,
+                    attributes: ['total_price']
+                }
+            ]
+        })
+        if (user) {
+            // we get the total order sum, or 0, if no order passed yet
+            const totalOrderSum = user.Orders.reduce((sum, order) => sum + (order.total_price || 0), 0);
+
+            const userData = {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                totalOrderSum: totalOrderSum
+            };
+
+            res.json(userData);
+            res.status(200);
+        } else {
+            res.status(404)
+            res.send("User was not found")
+        }
+    } catch (error) {
+        res.status(500)
+        res.json("Error while trying to access the user: " + error.message);
+    }
+})
 
 module.exports = router;
