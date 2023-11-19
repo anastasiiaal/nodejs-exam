@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken")
-const { User } = require("../models/User")
+const User = require("../models/User")
 
 function authenticateUser(req, res, next){
     console.log("L'utilisateur est-il connecté ?");
@@ -35,13 +35,10 @@ async function authentificationMiddleware (req, res, next) {
                     res.send("Non authorized")
                     return;
                 } else {
-                    res.status(404);
-                    res.send("Error while authentification");
+                    delete user.dataValues.password
+                    req.user = user.toJSON();
+                    next();
                 }
-                delete user.dataValues.password
-                // req.user = user.toJSON();
-                req.user = user;
-                next();
             } catch (error) {
                 res.status(401);
                 res.send("Access Denied: " + error.message);
@@ -58,3 +55,4 @@ module.exports = {
     authenticateUser,
     authentificationMiddleware
 }
+
