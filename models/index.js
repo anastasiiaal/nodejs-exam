@@ -12,8 +12,10 @@ const OrderProduct = require('./OrderProduct')
 Product.belongsToMany(Tag, { through: 'ProductTag' })
 Tag.belongsToMany(Product, { through: 'ProductTag' })
 
-Role.hasMany(User)
-User.hasOne(Role)
+// Role.hasMany(User)
+// User.hasOne(Role)
+User.belongsTo(Role, { as: 'role', foreignKey: 'RoleId' });
+Role.hasMany(User, { foreignKey: 'RoleId' });
 
 User.hasMany(Order)
 Order.hasOne(User)

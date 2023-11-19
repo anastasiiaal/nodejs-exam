@@ -16,6 +16,37 @@ function generateToken(id) {
     )
 }
 
+// ___________________________________________________________________
+// router to get a list of all users
+router.get('/all', async (req, res) => {
+    try {
+        const users = await User.findAll({
+            // when getting a list of users, we only want to have some information, like id, name, email and ..
+            attributes: ['id', 'name', 'email'],
+            // .. their role (id + title of role, e.g. 'client' or 'admin')
+            include: [
+                {
+                    model: Role,
+                    as: 'role',
+                    attributes: ['id', 'title']
+                }
+            ]
+        })
+
+        if (users) {
+            res.json(users);
+            res.status(200);
+        } else {
+            res.status(404);
+            res.json({ message: "Users not found" });
+        }
+    } catch (error) {
+        res.status(500)
+        res.json("Error while getting a list of users: " + error.message);
+    }
+})
+
+// ___________________________________________________________________
 // sign up of a new user (with role of normal user == client)
 router.post('/signup', async (req, res) => {
     const { email, password, name } = req.body;
@@ -57,6 +88,7 @@ router.post('/signup', async (req, res) => {
     }
 });
 
+// ___________________________________________________________________
 // log in of user
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
@@ -99,6 +131,7 @@ router.post('/login', async (req, res) => {
     }
 });
 
+// ___________________________________________________________________
 // router allowing to get information about a particular user: his id, name, email and total sum of his orders
 router.get('/:id', async (req, res) => {
     let userId = req.params.id;
