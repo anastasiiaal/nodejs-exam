@@ -21,7 +21,9 @@ const OrderProduct = sequelize.define('OrderProduct', {
         allowNull: false
     },
     quantity: {
-        type: DataTypes.INTEGER
+        type: DataTypes.INTEGER,
+        defaultValue: 1,
+        allowNull: false
     }
 },{})
 

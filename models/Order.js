@@ -3,7 +3,8 @@ const { DataTypes } = require('sequelize');
 
 const Order = sequelize.define('Order', {
     address: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
+        allowNull: false
     },
     total_price: {
         type: DataTypes.FLOAT
